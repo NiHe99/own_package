@@ -1,0 +1,21 @@
+<launch>
+  <!-- Frames of reference. -->
+  <arg name="fixed_frame" default="new_world" />
+
+  <!-- Topics. -->
+  <arg name="sensor_topic" default="/new_scan" />
+  <arg name="vis_topic" default="/vis/map3" />
+
+  <!-- Mapper node. -->
+  <node name="kf"
+        pkg="own_package"
+        type="all_kf_scan.py"
+        output="screen">
+
+    <param name="frames/fixed" value="$(arg fixed_frame)" />
+    <param name="topics/vis" value="$(arg vis_topic)" />
+    <param name="topics/sensor" value="$(arg sensor_topic)" />
+
+
+  </node>
+</launch>
