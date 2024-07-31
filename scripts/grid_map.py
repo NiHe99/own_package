@@ -214,34 +214,14 @@ class OccupancyGrid2d(object):
                                         self._map[scan_x+ii,scan_y+jj] = self.ProbabilityToLogOdds(self._map[scan_x+ii,scan_y+jj]+0.001) + self._occupied_update
                                         self._map[scan_x+ii,scan_y+jj] = self.LogOddsToProbability(self._map[scan_x+ii,scan_y+jj])
 
-                    self.scan_x_j = scan_x
-                    self.scan_y_j = scan_y
+                    pts = self.get_grid_cells_btw(self.grid_x,self.grid_y,scan_x,scan_y)
 
-                    for ii in range(int((rangeinVoxel+1)*4)):
-                                        
-                        scan_x_i = int(round(self.grid_x + (ii/4)*math.cos(angle),0))
-                        scan_y_i = int(round(self.grid_y + (ii/4)*math.sin(angle),0))
+                    for x in pts:
+    
+                        if self.ProbabilityToLogOdds(self._map[x[0],x[1]]+0.001) > self._free_threshold:
 
-
-
-                        if scan_x_i != scan_x or self.scan_x_j != scan_x_i or scan_y_i != scan_y or self.scan_y_j != scan_y_i:
-
-                            if self.ProbabilityToLogOdds(self._map[scan_x_i,scan_y_i]+0.001) < self._free_threshold: 
-
-                                self._map[scan_x_i,scan_y_i] = self._map[scan_x_i,scan_y_i]
-                            
-                            elif self.ProbabilityToLogOdds(self._map[scan_x_i,scan_y_i]+0.001) > self._free_threshold: 
-
-                                self._map[scan_x_i,scan_y_i]= self.ProbabilityToLogOdds(self._map[scan_x_i,scan_y_i]+0.001) +self._free_update
-                                self._map[scan_x_i,scan_y_i] = self.LogOddsToProbability(self._map[scan_x_i,scan_y_i])
-
-                        else:
-
-                            self._map[scan_x_i,scan_y_i] = self._map[scan_x_i,scan_y_i]
-
-                        self.scan_x_j = scan_x_i
-                        self.scan_y_j = scan_y_i
-        
+                            self._map[x[0],x[1]]= self.ProbabilityToLogOdds(self._map[x[0],x[1]]+0.001) + self._free_update
+                            self._map[x[0],x[1]] = self.LogOddsToProbability(self._map[x[0],x[1]])
 
             # Visualize.
             self.Visualize()
@@ -255,74 +235,60 @@ class OccupancyGrid2d(object):
                 rospy.logerr("%s: Was not initialized.", self._name)
                 return
 
-            # Get our current pose from TF.
-            for idx, r in enumerate(msg.ranges):
+            angles = np.array([])
 
-                counter = int(idx//msg.increments)
+            for position in msg.poses:
+
+                (roll, pitch, yaw) = tf.transformations.euler_from_quaternion(
+                    [position.orientation.x, position.orientation.z,
+                    -position.orientation.y, position.orientation.w])
+                
+                angles = np.append(angles,[yaw])
+            
+            ranges = np.array(msg.ranges)
+     
+            # Get our current pose from TF.
+            for idx, r in np.ndenumerate(ranges):
+                counter = int(idx[0]//msg.increments)
                 #rospy.logerr(idx)
             # Extract x, y coordinates and heading (yaw) angle of the turtlebot, 
             # assuming that the turtlebot is on the ground plane.
                 sensor_x = msg.poses[counter].position.x
                 sensor_y = msg.poses[counter].position.z
             
-
-                (roll, pitch, yaw) = tf.transformations.euler_from_quaternion(
-                    [msg.poses[counter].orientation.x, msg.poses[counter].orientation.z,
-                    -msg.poses[counter].orientation.y, msg.poses[counter].orientation.w])
-                
-    
                 [self.grid_x,self.grid_y]= self.PointToVoxel(sensor_x,sensor_y)
         
                 if np.isinf(r):
                     continue
                 else:    
-                    idx_modulo = idx%70
+                    idx_modulo = idx[0]%70
                 # Get angle of this ray in fixed frame.
 
-                    angle = 0.7 + idx_modulo*0.025 + yaw
+                    angle = 0.7 + idx_modulo*0.025 + angles[counter]
 
 
                     rangeinVoxel = round(r//self._x_res,0)
 
                     scan_x = int(round(self.grid_x + rangeinVoxel*math.cos(angle),0))
                     scan_y = int(round(self.grid_y + rangeinVoxel*math.sin(angle),0))
-                    if self.ProbabilityToLogOdds(self._map[scan_x,scan_y]+0.001) > self._occupied_threshold:
-                        self._map[scan_x,scan_y] = self._map[scan_x,scan_y]
 
-                    elif self.ProbabilityToLogOdds(self._map[scan_x,scan_y]+0.001) < self._occupied_threshold: 
+                    if self.ProbabilityToLogOdds(self._map[scan_x,scan_y]+0.001) < self._occupied_threshold: 
                             for ii in range(-1,2):
                                 for jj in range(-1,2):
                                     if self.ProbabilityToLogOdds(self._map[scan_x+ii,scan_y+jj]+0.001) <self._occupied_threshold:
                                         self._map[scan_x+ii,scan_y+jj] = self.ProbabilityToLogOdds(self._map[scan_x+ii,scan_y+jj]+0.001) + self._occupied_update
                                         self._map[scan_x+ii,scan_y+jj] = self.LogOddsToProbability(self._map[scan_x+ii,scan_y+jj])
 
-                    self.scan_x_j = scan_x
-                    self.scan_y_j = scan_y
+                    pts = self.get_grid_cells_btw(self.grid_x,self.grid_y,scan_x,scan_y)
 
-                    for ii in range(int((rangeinVoxel+1)*4)):
-                                        
-                        scan_x_i = int(round(self.grid_x + (ii/4)*math.cos(angle),0))
-                        scan_y_i = int(round(self.grid_y + (ii/4)*math.sin(angle),0))
+                    for x in pts:
+    
+                        if self.ProbabilityToLogOdds(self._map[x[0],x[1]]+0.001) > self._free_threshold:
+
+                            self._map[x[0],x[1]]= self.ProbabilityToLogOdds(self._map[x[0],x[1]]+0.001) + self._free_update
+                            self._map[x[0],x[1]] = self.LogOddsToProbability(self._map[x[0],x[1]])
 
 
-
-                        if scan_x_i != scan_x or self.scan_x_j != scan_x_i or scan_y_i != scan_y or self.scan_y_j != scan_y_i:
-
-                            if self.ProbabilityToLogOdds(self._map[scan_x_i,scan_y_i]+0.001) < self._free_threshold: 
-
-                                self._map[scan_x_i,scan_y_i] = self._map[scan_x_i,scan_y_i]
-                            
-                            elif self.ProbabilityToLogOdds(self._map[scan_x_i,scan_y_i]+0.001) > self._free_threshold: 
-
-                                self._map[scan_x_i,scan_y_i]= self.ProbabilityToLogOdds(self._map[scan_x_i,scan_y_i]+0.001) +self._free_update
-                                self._map[scan_x_i,scan_y_i] = self.LogOddsToProbability(self._map[scan_x_i,scan_y_i])
-
-                        else:
-
-                            self._map[scan_x_i,scan_y_i] = self._map[scan_x_i,scan_y_i]
-
-                        self.scan_x_j = scan_x_i
-                        self.scan_y_j = scan_y_i
         
             rospy.logerr("fertig")
             # Visualize.
@@ -333,7 +299,40 @@ class OccupancyGrid2d(object):
             self.Visualize()
 
             
+    def remove_np_duplicates(self,data):
+        # Perform lex sort and get sorted data
+        sorted_idx = np.lexsort(data.T)
+        sorted_data =  data[sorted_idx,:]
 
+        # Get unique row mask
+        row_mask = np.append([True],np.any(np.diff(sorted_data,axis=0),1))
+
+        # Get unique rows
+        out = sorted_data[row_mask]
+        return out
+    
+    def get_grid_cells_btw(self,x1,y1,x2,y2):
+        dx = x2-x1 
+        dy = y2-y1
+
+        if dx == 0: # will divide by dx later, this will cause err. Catch this case up here
+            step = np.sign(dy)
+            ys = np.arange(0,dy+step,step)
+            xs = np.repeat(x1, ys.shape[0])
+        else:
+            m = dy/(dx+0.0)
+            b = y1 - m * x1 
+
+            step = 1.0/(max(abs(dx),abs(dy))) 
+            xs = np.arange(x1, x2, step * np.sign(x2-x1))
+            ys = xs * m + b
+
+        xs = np.rint(xs)
+        ys = np.rint(ys)
+        pts = np.column_stack((xs,ys))
+        pts = self.remove_np_duplicates(pts)
+
+        return pts.astype(int)
     # Convert (x, y) coordinates in fixed frame to grid coordinates.
     def PointToVoxel(self, x, y):
         grid_x = int((x - self._x_min) / self._x_res)
