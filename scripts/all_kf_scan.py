@@ -51,6 +51,7 @@ class pointcloud_2_OGrid2d(object):
         self.range = []
         self._initialized = True
         self.increments = 0
+        self.länge = 0
 
         return True
 
@@ -100,74 +101,87 @@ class pointcloud_2_OGrid2d(object):
             rospy.logerr("%s: Was not initialized.", self._name)
             return
         
-        self.skip = 0
+
+        if len(kf_msg.poses)-1 > self.länge:
         
-        if self.length_kf > 1:
-            for i in range(len(self._kf_scan_old)-1):
-
-                if abs(self._kf_scan_old[i].position.x - kf_msg.poses[i].position.x) > 0.05:
-                    # rospy.logerr("x")
-                    # rospy.logerr(kf_msg.poses[i].position.x)
-                    # rospy.logerr(self._kf_scan_old[i].position.x)
-                    self.skip = 1
-
-                elif abs(self._kf_scan_old[i].position.y - kf_msg.poses[i].position.y) > 0.05:
-                    # rospy.logerr("y")
-                    # rospy.logerr(kf_msg.poses[i].position.y)
-                    # rospy.logerr(self._kf_scan_old[i].position.y)
-                    self.skip = 1
-
-                elif abs(self._kf_scan_old[i].position.z - kf_msg.poses[i].position.z) > 0.05:
-                    # rospy.logerr("z")
-                    # rospy.logerr(kf_msg.poses[i].position.z)
-                    # rospy.logerr(self._kf_scan_old[i].position.z)
-                    self.skip = 1
-
-                elif abs(self._kf_scan_old[i].orientation.x - kf_msg.poses[i].orientation.x) > 0.01:
-                    # rospy.logerr("ox")
-                    # rospy.logerr(kf_msg.poses[i].orientation.x)
-                    # rospy.logerr(self._kf_scan_old[i].orientation.x)
-                    self.skip = 1
-
-                elif abs(self._kf_scan_old[i].orientation.y - kf_msg.poses[i].orientation.y) > 0.01:
-                    # rospy.logerr("oy")
-                    # rospy.logerr(kf_msg.poses[i].orientation.y)
-                    # rospy.logerr(self._kf_scan_old[i].orientation.y)
-                    self.skip = 1
-
-                elif abs(self._kf_scan_old[i].orientation.z - kf_msg.poses[i].orientation.z) > 0.01:
-                    # rospy.logerr("oz")
-                    # rospy.logerr(kf_msg.poses[i].orientation.z)
-                    # rospy.logerr(self._kf_scan_old[i].orientation.z)
-                    self.skip = 1
-
-                elif abs(self._kf_scan_old[i].orientation.w - kf_msg.poses[i].orientation.w) > 0.01:
-                    # rospy.logerr("ow")
-                    # rospy.logerr(kf_msg.poses[i].orientation.w)
-                    # rospy.logerr(self._kf_scan_old[i].orientation.w)
-                    self.skip = 1 
-                       
-        self._kf_scan_array = kf_msg.poses
-        self.pose = kf_msg.poses[len(kf_msg.poses)-2]            
-        
-
-        self.increments = (laser_msg.angle_max - laser_msg.angle_min)//laser_msg.angle_increment
-        
-        self.range = laser_msg.ranges
-
-        if len(kf_msg.poses)> self.length_kf-1: 
+            self.skip = 0
             
-            self.ranges1.extend(laser_msg.ranges)
+
+            if len(kf_msg.poses)-1 != self.length_kf:
+                rospy.logerr("Falsche Länge")
+
+
+            if self.length_kf > 1:
+                for i in range(len(self._kf_scan_old)-1):
+
+                    if abs(self._kf_scan_old[i].position.x - kf_msg.poses[i].position.x) > 0.05:
+                        # rospy.logerr("x")
+                        # rospy.logerr(kf_msg.poses[i].position.x)
+                        # rospy.logerr(self._kf_scan_old[i].position.x)
+                        self.skip = 1
+
+                    elif abs(self._kf_scan_old[i].position.y - kf_msg.poses[i].position.y) > 0.05:
+                        # rospy.logerr("y")
+                        # rospy.logerr(kf_msg.poses[i].position.y)
+                        # rospy.logerr(self._kf_scan_old[i].position.y)
+                        self.skip = 1
+
+                    elif abs(self._kf_scan_old[i].position.z - kf_msg.poses[i].position.z) > 0.05:
+                        # rospy.logerr("z")
+                        # rospy.logerr(kf_msg.poses[i].position.z)
+                        # rospy.logerr(self._kf_scan_old[i].position.z)
+                        self.skip = 1
+
+                    elif abs(self._kf_scan_old[i].orientation.x - kf_msg.poses[i].orientation.x) > 0.01:
+                        # rospy.logerr("ox")
+                        # rospy.logerr(kf_msg.poses[i].orientation.x)
+                        # rospy.logerr(self._kf_scan_old[i].orientation.x)
+                        self.skip = 1
+
+                    elif abs(self._kf_scan_old[i].orientation.y - kf_msg.poses[i].orientation.y) > 0.01:
+                        # rospy.logerr("oy")
+                        # rospy.logerr(kf_msg.poses[i].orientation.y)
+                        # rospy.logerr(self._kf_scan_old[i].orientation.y)
+                        self.skip = 1
+
+                    elif abs(self._kf_scan_old[i].orientation.z - kf_msg.poses[i].orientation.z) > 0.01:
+                        # rospy.logerr("oz")
+                        # rospy.logerr(kf_msg.poses[i].orientation.z)
+                        # rospy.logerr(self._kf_scan_old[i].orientation.z)
+                        self.skip = 1
+
+                    elif abs(self._kf_scan_old[i].orientation.w - kf_msg.poses[i].orientation.w) > 0.01:
+                        # rospy.logerr("ow")
+                        # rospy.logerr(kf_msg.poses[i].orientation.w)
+                        # rospy.logerr(self._kf_scan_old[i].orientation.w)
+                        self.skip = 1 
+                        
+            self._kf_scan_array = kf_msg.poses[:-1]
+            self.pose = kf_msg.poses[len(kf_msg.poses)-2]            
             
+
+            self.increments = (laser_msg.angle_max - laser_msg.angle_min)//laser_msg.angle_increment
             
-            self.length_kf = self.length_kf +1
+            self.range = laser_msg.ranges
+
+            if len(kf_msg.poses)> self.length_kf-1: 
+                
+                self.ranges1.extend(laser_msg.ranges)
+                
+                
+                self.length_kf = self.length_kf +1
 
 
-        self._kf_scan_old = kf_msg.poses
+            self._kf_scan_old = kf_msg.poses
+
+            self.länge = self.länge + 1
 
 
 
-        self.Visualize()
+            self.Visualize()
+        else: 
+            self.skip = 2
+            self.Visualize()
 
     def Visualize(self):
 

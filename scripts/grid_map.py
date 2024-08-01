@@ -215,9 +215,10 @@ class OccupancyGrid2d(object):
                                         self._map[scan_x+ii,scan_y+jj] = self.LogOddsToProbability(self._map[scan_x+ii,scan_y+jj])
 
                     pts = self.get_grid_cells_btw(self.grid_x,self.grid_y,scan_x,scan_y)
+                    
+         
+                    for x in pts[1:-1]:
 
-                    for x in pts:
-    
                         if self.ProbabilityToLogOdds(self._map[x[0],x[1]]+0.001) > self._free_threshold:
 
                             self._map[x[0],x[1]]= self.ProbabilityToLogOdds(self._map[x[0],x[1]]+0.001) + self._free_update
@@ -281,7 +282,7 @@ class OccupancyGrid2d(object):
 
                     pts = self.get_grid_cells_btw(self.grid_x,self.grid_y,scan_x,scan_y)
 
-                    for x in pts:
+                    for x in pts[1:-1]:
     
                         if self.ProbabilityToLogOdds(self._map[x[0],x[1]]+0.001) > self._free_threshold:
 
@@ -315,9 +316,9 @@ class OccupancyGrid2d(object):
         dx = x2-x1 
         dy = y2-y1
 
-        if dx == 0: # will divide by dx later, this will cause err. Catch this case up here
+        if dx == 0: # will divide by dx later, this will cause err. Catch this case up here#
             step = np.sign(dy)
-            ys = np.arange(0,dy+step,step)
+            ys = np.arange(y1,y1+dy+step,step)
             xs = np.repeat(x1, ys.shape[0])
         else:
             m = dy/(dx+0.0)
