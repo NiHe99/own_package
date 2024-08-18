@@ -210,6 +210,6 @@ include_directories(
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
 
-catkin_install_python(PROGRAMS scripts/talker.py scripts/listener.py scripts/mapping_node.py scripts/occupancy_grid_2d.py scripts/pointcloud_mapper.py scripts/all_kf_scan.py scripts/grid_map.py
+catkin_install_python(PROGRAMS scripts/talker.py scripts/listener.py scripts/mapping_node.py scripts/occupancy_grid_2d.py scripts/pointcloud_mapper.py scripts/Potentialfeld.py scripts/grid_map_discrete.py scripts/Potential_map.py scripts/all_kf_scan.py scripts/grid_map.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )

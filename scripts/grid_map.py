@@ -165,6 +165,7 @@ class OccupancyGrid2d(object):
         return True
 
     # Callback to process sensor measurements.
+    
     def SensorCallback(self, msg):
 
         if msg.skip == 0:
@@ -204,15 +205,16 @@ class OccupancyGrid2d(object):
 
                     scan_x = int(round(self.grid_x + rangeinVoxel*math.cos(angle),0))
                     scan_y = int(round(self.grid_y + rangeinVoxel*math.sin(angle),0))
-                    if self.ProbabilityToLogOdds(self._map[scan_x,scan_y]+0.001) > self._occupied_threshold:
-                        self._map[scan_x,scan_y] = self._map[scan_x,scan_y]
 
-                    elif self.ProbabilityToLogOdds(self._map[scan_x,scan_y]+0.001) < self._occupied_threshold: 
-                            for ii in range(-1,2):
-                                for jj in range(-1,2):
-                                    if self.ProbabilityToLogOdds(self._map[scan_x+ii,scan_y+jj]+0.001) <self._occupied_threshold:
-                                        self._map[scan_x+ii,scan_y+jj] = self.ProbabilityToLogOdds(self._map[scan_x+ii,scan_y+jj]+0.001) + self._occupied_update
-                                        self._map[scan_x+ii,scan_y+jj] = self.LogOddsToProbability(self._map[scan_x+ii,scan_y+jj])
+                    #for ii in range(-1,2):
+                        #for jj in range(-1,2):
+                    ii = 0
+                    jj = 0
+                
+                    if self.ProbabilityToLogOdds(self._map[scan_x+ii,scan_y+jj]+0.001) <self._occupied_threshold:
+                        self._map[scan_x+ii,scan_y+jj] = self.ProbabilityToLogOdds(self._map[scan_x+ii,scan_y+jj]+0.001) + self._occupied_update
+                        self._map[scan_x+ii,scan_y+jj] = self.LogOddsToProbability(self._map[scan_x+ii,scan_y+jj])
+
 
                     pts = self.get_grid_cells_btw(self.grid_x,self.grid_y,scan_x,scan_y)
                     
@@ -223,6 +225,8 @@ class OccupancyGrid2d(object):
 
                             self._map[x[0],x[1]]= self.ProbabilityToLogOdds(self._map[x[0],x[1]]+0.001) + self._free_update
                             self._map[x[0],x[1]] = self.LogOddsToProbability(self._map[x[0],x[1]])
+
+
 
             # Visualize.
             self.Visualize()
@@ -258,7 +262,7 @@ class OccupancyGrid2d(object):
                 sensor_y = msg.poses[counter].position.z
             
                 [self.grid_x,self.grid_y]= self.PointToVoxel(sensor_x,sensor_y)
-        
+                
                 if np.isinf(r):
                     continue
                 else:    
@@ -273,21 +277,24 @@ class OccupancyGrid2d(object):
                     scan_x = int(round(self.grid_x + rangeinVoxel*math.cos(angle),0))
                     scan_y = int(round(self.grid_y + rangeinVoxel*math.sin(angle),0))
 
-                    if self.ProbabilityToLogOdds(self._map[scan_x,scan_y]+0.001) < self._occupied_threshold: 
-                            for ii in range(-1,2):
-                                for jj in range(-1,2):
-                                    if self.ProbabilityToLogOdds(self._map[scan_x+ii,scan_y+jj]+0.001) <self._occupied_threshold:
-                                        self._map[scan_x+ii,scan_y+jj] = self.ProbabilityToLogOdds(self._map[scan_x+ii,scan_y+jj]+0.001) + self._occupied_update
-                                        self._map[scan_x+ii,scan_y+jj] = self.LogOddsToProbability(self._map[scan_x+ii,scan_y+jj])
+                    ii = 0
+                    jj = 0
+
+                    if self.ProbabilityToLogOdds(self._map[scan_x+ii,scan_y+jj]+0.001) <self._occupied_threshold:
+                        self._map[scan_x+ii,scan_y+jj] = self.ProbabilityToLogOdds(self._map[scan_x+ii,scan_y+jj]+0.001) + self._occupied_update
+                        self._map[scan_x+ii,scan_y+jj] = self.LogOddsToProbability(self._map[scan_x+ii,scan_y+jj])
+
 
                     pts = self.get_grid_cells_btw(self.grid_x,self.grid_y,scan_x,scan_y)
-
+                    
+         
                     for x in pts[1:-1]:
-    
+
                         if self.ProbabilityToLogOdds(self._map[x[0],x[1]]+0.001) > self._free_threshold:
 
                             self._map[x[0],x[1]]= self.ProbabilityToLogOdds(self._map[x[0],x[1]]+0.001) + self._free_update
                             self._map[x[0],x[1]] = self.LogOddsToProbability(self._map[x[0],x[1]])
+
 
 
         
@@ -299,7 +306,7 @@ class OccupancyGrid2d(object):
 
             self.Visualize()
 
-            
+           
     def remove_np_duplicates(self,data):
         # Perform lex sort and get sorted data
         sorted_idx = np.lexsort(data.T)
@@ -334,7 +341,9 @@ class OccupancyGrid2d(object):
         pts = self.remove_np_duplicates(pts)
 
         return pts.astype(int)
+    
     # Convert (x, y) coordinates in fixed frame to grid coordinates.
+    
     def PointToVoxel(self, x, y):
         grid_x = int((x - self._x_min) / self._x_res)
         grid_y = int((y - self._y_min) / self._y_res)
@@ -349,9 +358,11 @@ class OccupancyGrid2d(object):
         return (center_x, center_y)
 
     # Convert between probabity and log-odds.
+   
     def ProbabilityToLogOdds(self, p):
         return np.log(p / (1.0 - p))
-
+    
+    
     def LogOddsToProbability(self, l):
         return 1.0 / (1.0 + np.exp(-l))
 
