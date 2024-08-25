@@ -90,10 +90,14 @@ class OccupancyGrid2d(object):
 
         width = msg.info.width
         height = msg.info.height
-        x,y = np.meshgrid(np.linspace(-30,30,width), np.linspace(-30,30,height))
-        data = np.array(msg.data)/100
+        origin_x = msg.info.origin.position.x
+        origin_y = msg.info.origin.position.y
+        x,y = np.meshgrid(np.linspace(origin_y,origin_y+height/5,height),np.linspace(origin_x,origin_x+width/5,width))
+        data = np.array(msg.data)/10
         data_reshape = np.reshape(data,(width,height))
-        self.points = np.array([x,y,data_reshape,data_reshape]).reshape(4,-1).T
+        
+        self.points = np.array([y,x,data_reshape,data_reshape]).reshape(4,-1).T
+       
         self.Visualize()
 
            

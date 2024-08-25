@@ -205,7 +205,8 @@ class OccupancyGrid2d(object):
 
                     scan_x = int(round(self.grid_x + rangeinVoxel*math.cos(angle),0))
                     scan_y = int(round(self.grid_y + rangeinVoxel*math.sin(angle),0))
-
+            
+                 
                     #for ii in range(-1,2):
                         #for jj in range(-1,2):
                     ii = 0
@@ -276,7 +277,7 @@ class OccupancyGrid2d(object):
 
                     scan_x = int(round(self.grid_x + rangeinVoxel*math.cos(angle),0))
                     scan_y = int(round(self.grid_y + rangeinVoxel*math.sin(angle),0))
-
+                   
                     ii = 0
                     jj = 0
 
