@@ -87,7 +87,7 @@ void chatterCallback(nav_msgs::OccupancyGrid occgrid)
         for (int ii = 0; ii < cells_front.size(); ++ii) {
             int row2 = (int)cells_front[ii]/ width;
             int col2 = cells_front[ii] % width;
-            val = val - exp(-(pow((row-row2)/5,2)+pow((col-col2)/5,2))/(2*pow(4,2))); 
+            val = val - exp(-(pow((row-row2)/5,2)+pow((col-col2)/5,2))/(2*pow(4.5,2))); 
         }
 
         for (int ii = 0; ii < cells_unex.size(); ++ii) {

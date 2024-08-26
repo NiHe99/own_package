@@ -219,3 +219,6 @@ target_link_libraries(occmap ${catkin_LIBRARIES})
 
 add_executable(occmapping src/occ_mapping.cpp)
 target_link_libraries(occmapping ${catkin_LIBRARIES})
+
+add_executable(occmap2 src/occmap2.cpp)
+target_link_libraries(occmap2 ${catkin_LIBRARIES})

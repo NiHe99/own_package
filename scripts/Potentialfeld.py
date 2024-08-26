@@ -132,6 +132,7 @@ class OccupancyGrid2d(object):
     # Callback to process sensor measurements.
     
     def SensorCallback(self, Grid, Pose):
+        weite = 50
         self.height = Grid.info.height
         self.width = Grid.info.width
         self.res = Grid.info.resolution
@@ -141,10 +142,10 @@ class OccupancyGrid2d(object):
         sensor_y = Pose.pose.position.z
         self.grid_x = int((sensor_x - self._x_min) / self._x_res)
         self.grid_y = int((sensor_y - self._y_min) / self._y_res)
-        self.num1 = self.grid_x -25
-        num2 = self.grid_x +25 
-        self.num3 = self.grid_y -25
-        num4 = self.grid_y +25 
+        self.num1 = self.grid_x -weite
+        num2 = self.grid_x +weite 
+        self.num3 = self.grid_y -weite
+        num4 = self.grid_y +weite 
         data_reshape = data_reshape[self.num1:num2,self.num3:num4]
   
         self._map = np.ones((data_reshape.shape[0], data_reshape.shape[1]))
@@ -152,10 +153,18 @@ class OccupancyGrid2d(object):
         for idx, r in np.ndenumerate(data_reshape):
             
             if r > 50:
-                self._map[idx[0],idx[1]] = 100
-            elif r < 50:
+                
+                for x in range(-3,4):
+                    
+                    for y in range(-3,4):
+                        cir = x ** 2 + y ** 2
+                        if  cir <= 10 and (idx[0]+x >= 0 and idx[0]+x <= weite*2-1) and (idx[1]+y >= 0 and idx[1]+y <= weite*2-1):
+                            self._map[idx[0]+x,idx[1]+y] = 100
+
+            elif r < 50 and self._map[idx[0],idx[1]] != 100:
                 self._map[idx[0],idx[1]] = 0
-            elif r == 50:
+
+            elif r == 50 and self._map[idx[0],idx[1]] != 100:
                 self._map[idx[0],idx[1]] = 50
 
 
