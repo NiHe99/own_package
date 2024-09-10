@@ -1,12 +1,14 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(own_package)
 
+
 ## Compile as C++11, supported in ROS Kinetic and newer
-# add_compile_options(-std=c++11)
+#add_compile_options(-std=c++11  -D_GLIBCXX_USE_CXX11_ABI=0)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
+#find_package(casadi REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
@@ -14,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   geometry_msgs
   nav_msgs
+
 )
 
 ## System dependencies are found with CMake's conventions
@@ -54,6 +57,7 @@ find_package(catkin REQUIRED COMPONENTS
    FILES
    Num.msg
 Ranges.msg
+Pot_Grid.msg
 
  )
 
@@ -76,6 +80,7 @@ Ranges.msg
    DEPENDENCIES
    std_msgs
    geometry_msgs
+nav_msgs
 own_package
  )
 
@@ -211,7 +216,7 @@ include_directories(
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
 
-catkin_install_python(PROGRAMS scripts/Potentialfeld.py scripts/Potential_map.py scripts/all_kf_scan.py 
+catkin_install_python(PROGRAMS scripts/Potentialfeld.py scripts/Potential_map.py scripts/all_kf_scan.py scripts/casadi_test_1.py scripts/casadi_test_2.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 add_executable(occmap src/occmap.cpp)
@@ -222,3 +227,6 @@ target_link_libraries(occmapping ${catkin_LIBRARIES})
 
 add_executable(occmap2 src/occmap2.cpp)
 target_link_libraries(occmap2 ${catkin_LIBRARIES})
+
+add_executable(astar src/astar.cpp)
+target_link_libraries(astar ${catkin_LIBRARIES})

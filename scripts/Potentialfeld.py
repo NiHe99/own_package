@@ -132,7 +132,7 @@ class OccupancyGrid2d(object):
     # Callback to process sensor measurements.
     
     def SensorCallback(self, Grid, Pose):
-        weite = 50
+        weite = 25
         self.height = Grid.info.height
         self.width = Grid.info.width
         self.res = Grid.info.resolution

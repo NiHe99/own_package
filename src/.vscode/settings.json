@@ -11,6 +11,8 @@
         "new": "cpp",
         "*.tcc": "cpp",
         "cstdint": "cpp",
-        "typeinfo": "cpp"
+        "typeinfo": "cpp",
+        "cstddef": "cpp",
+        "xtr1common": "cpp"
     }
 }

@@ -1,4 +1,5 @@
 #include <nav_msgs/OccupancyGrid.h>
+#include <own_package/Pot_Grid.h>
 #include <ros/console.h>
 #include "ros/ros.h"
 #include <cmath>
@@ -8,16 +9,16 @@ ros::Publisher pose_pub,pose_front;
 
 void setup_publishers(ros::NodeHandle &node_handler)
 {
-    pose_pub = node_handler.advertise<nav_msgs::OccupancyGrid>("/cpp_map2", 1);
+    pose_pub = node_handler.advertise<own_package::Pot_Grid>("/cpp_map2", 1);
     pose_front = node_handler.advertise<nav_msgs::OccupancyGrid>("/front_map2", 1);
 }
 
 void chatterCallback(nav_msgs::OccupancyGrid occgrid)
 {
-
+    int counter = 0;
     ros::Time msg_time = ros::Time::now();
-    nav_msgs::OccupancyGrid pose_msg,front_msg;
-
+    nav_msgs::OccupancyGrid front_msg;
+    own_package::Pot_Grid pose_msg;
     int width = occgrid.info.width;
     int height = occgrid.info.height;
 
@@ -71,18 +72,55 @@ void chatterCallback(nav_msgs::OccupancyGrid occgrid)
         if (x == 0 && (x1 == 50 || x2 == 50 ||x3 == 50 ||x4 == 50)){
             frontier[index] = 100;
             cells_front.push_back (index);
-
-        }else if(x == 0 && (x1 == 90 || x2 == 90 ||x3 == 90 ||x4 == 90)){
-            if (frontier[index] != 100){
-            frontier[index] = 100;
-            }
-        }else{
-            frontier[index] = 0;
+            counter++;
 
         }
 
     }
+
+    if (counter < 1){
+        for (int index = 0; index < occgrid.data.size(); ++index){
+
+            int x = occgrid.data[index];
+            int x1;
+            int x2;
+            int x3;
+            int x4;
+
+            if (index%width != width-1){
+                x1 = occgrid.data[index+1];
+            }else{
+                x1 = 90;
+            }
+            if (index%width != 0){
+                x2 = occgrid.data[index-1];
+            }else{
+                x2 = 90;
+            }
+
+            if (index > width-1){
+                x3 = occgrid.data[index-width];  
+            }else{
+                x3 = 90;
+            }
+
+            if (index+width-1 <  width*height){
+                x4 = occgrid.data[index+width];
+            }else{
+                x4 = 90;
+            }
     
+            if(x == 0 && (x1 == 90 || x2 == 90 ||x3 == 90 ||x4 == 90)){
+                if (frontier[index] != 100){
+                frontier[index] = 100;
+                cells_front.push_back (index);
+                }
+            }else{
+                frontier[index] = 0;
+
+            }
+        }
+    }
     long test_val = 0; 
 
     for (int ii = 0; ii < cells_front.size(); ++ii) {
@@ -99,7 +137,9 @@ void chatterCallback(nav_msgs::OccupancyGrid occgrid)
                     int index_p = (row2+xx-radius)*width + (col2+yy-radius);
                     int rowp = index_p/ width;
                     int colp = index_p % width;
-                    P1[index_p] = P1[index_p] - exp(-(pow((rowp-row2),2)+pow((colp-col2),2))/(2*pow(22.5,2))); 
+
+                   
+                    P1[index_p] = P1[index_p] - exp(-(pow((rowp-row2),2)+pow((colp-col2),2))/(2*pow(22.5,2)));
                     
         }
         }
@@ -121,6 +161,7 @@ void chatterCallback(nav_msgs::OccupancyGrid occgrid)
                     int index_p = (row2+xx-radius)*width + (col2+yy-radius);
                     int rowp = index_p/ width;
                     int colp = index_p % width;
+
                     P2[index_p] = P2[index_p] - exp(-(pow((rowp-row2),2)+pow((colp-col2),2))/(2*pow(8,2))); 
                     
         }
@@ -143,7 +184,9 @@ void chatterCallback(nav_msgs::OccupancyGrid occgrid)
                     int index_p = (row2+xx-radius)*width + (col2+yy-radius);
                     int rowp = index_p/ width;
                     int colp = index_p % width;
+                    
                     P3[index_p] = P3[index_p] + exp(-(pow((rowp-row2),2)+pow((colp-col2),2))/(2*pow(1,2))); 
+                    
                     
         }
         }
@@ -153,8 +196,17 @@ void chatterCallback(nav_msgs::OccupancyGrid occgrid)
 
     for (int ii = 0; ii < P4.size(); ++ii){
 
-        P4[ii]= (4*P1[ii] + 1*P2[ii] + 200*P3[ii])/20;
-        
+        int weight1 = 3;
+        int weight2 = 1; 
+        int weight3 = 100;
+        int divide = 20;
+        if ((weight1*P1[ii] + weight2*P2[ii] + weight3*P3[ii])/divide< -100){
+            P4[ii] = -100;
+        }else if ((weight1*P1[ii] + weight2*P2[ii] + weight3*P3[ii])/divide> 100){
+            P4[ii] = 100;
+        }else{
+        P4[ii]= (weight1*P1[ii] + weight2*P2[ii] + weight3*P3[ii])/divide;
+        }
     }
 
     pose_msg.header.frame_id = occgrid.header.frame_id;
@@ -166,8 +218,7 @@ void chatterCallback(nav_msgs::OccupancyGrid occgrid)
     pose_msg.info.map_load_time = occgrid.info.map_load_time;
     pose_msg.info.origin.position = occgrid.info.origin.position;
     pose_msg.info.origin.orientation = occgrid.info.origin.orientation;
-    std::vector<signed char> P4sc(P4.begin(), P4.end());
-    pose_msg.data = P4sc;
+    pose_msg.data = P4;
 
     front_msg.header.frame_id = occgrid.header.frame_id;
     front_msg.header.stamp = occgrid.header.stamp;

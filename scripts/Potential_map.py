@@ -24,6 +24,7 @@ from nav_msgs.msg import OccupancyGrid
 from sensor_msgs import point_cloud2
 from sensor_msgs.msg import PointField
 from std_msgs.msg import Header
+from own_package.msg import Pot_Grid
 
 import numpy as np
 
@@ -72,7 +73,7 @@ class OccupancyGrid2d(object):
     def RegisterCallbacks(self):
         # Subscriber.
         self._sensor_sub = rospy.Subscriber(self._sensor_topic,
-                                            OccupancyGrid,
+                                            Pot_Grid,
                                             self.SensorCallback,
                                             queue_size=None)
 
