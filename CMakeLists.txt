@@ -58,6 +58,7 @@ find_package(catkin REQUIRED COMPONENTS
    Num.msg
 Ranges.msg
 Pot_Grid.msg
+Three_cat.msg
 
  )
 
@@ -216,7 +217,7 @@ include_directories(
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
 
-catkin_install_python(PROGRAMS scripts/Potentialfeld.py scripts/Potential_map.py scripts/all_kf_scan.py scripts/casadi_test_1.py scripts/casadi_test_2.py
+catkin_install_python(PROGRAMS scripts/Potentialfeld.py scripts/Potential_map.py scripts/all_kf_scan.py scripts/casadi_test_1.py scripts/casadi_test_2.py scripts/casadi_test_3.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 add_executable(occmap src/occmap.cpp)
@@ -230,3 +231,6 @@ target_link_libraries(occmap2 ${catkin_LIBRARIES})
 
 add_executable(astar src/astar.cpp)
 target_link_libraries(astar ${catkin_LIBRARIES})
+
+add_executable(zones src/zones.cpp)
+target_link_libraries(zones ${catkin_LIBRARIES})

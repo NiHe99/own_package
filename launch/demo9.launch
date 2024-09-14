@@ -1,0 +1,16 @@
+<launch>
+
+  <node name="mpc"
+        pkg="own_package"
+        type="casadi_test_3.py"
+        output="screen">
+
+    <param name="frames/fixed" value="new_world" />
+
+
+    <param name="topics/vis" value="/cmd_test" />
+    <param name="topics/vis2" value="/poses_mpc" />
+    <param name="topics/sensor" value="/orb_slam3/camera_pose" />
+    <param name="topics/sensor2" value="/zones" />
+  </node>
+</launch>
